@@ -65,7 +65,7 @@ export default async function InvoicePage({ params }: PageProps<"/faktury/[id]">
           <Party title="Nabywca" name={invoice.buyerName} address={invoice.buyerAddress} nip={invoice.buyerNip} />
         </section>
 
-        <table className="w-full min-w-[560px] border-collapse">
+        <table className="w-full min-w-140 border-collapse">
           <thead>
             <tr className="bg-neutral-100 text-left text-xs text-neutral-600">
               <th className="p-2">Lp.</th>
