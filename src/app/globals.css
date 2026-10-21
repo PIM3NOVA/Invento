@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* Motyw aplikacji: tokeny kolorów, typografia, zaokrąglenia */
+@theme {
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+
+  --color-bg: #07070a; /* tło strony */
+  --color-surface: #111117; /* karty, panele */
+  --color-surface-2: #1a1a22; /* pola formularzy, hover */
+  --color-line: #2a2a35; /* obramowania */
+  --color-fg: #f5f5f7; /* tekst główny */
+  --color-muted: #9b9bab; /* tekst pomocniczy */
+
+  --color-brand: #e5007e; /* kolor marki */
+  --color-brand-hover: #ff1a94;
+  --color-brand-soft: #e5007e26; /* kolor marki z przezroczystością */
+
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  --radius-card: 1.25rem; /* zaokrąglenie kart (rounded-card) */
+}
+
+html {
+  color-scheme: dark; /* ciemne kontrolki systemowe */
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  /* obszar paska gestów na urządzeniach mobilnych */
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Zaznaczenie tekstu */
+::selection {
+  background: var(--color-brand);
+  color: white;
+}
+
+/* Style wydruku (faktury) – ukrycie nawigacji i elementów interaktywnych */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

@@ -1,0 +1,306 @@
+// Schemat bazy danych aplikacji Invento (PostgreSQL / Supabase).
+// Kwoty przechowywane są w groszach jako liczby całkowite (Int),
+// co eliminuje błędy zaokrągleń arytmetyki zmiennoprzecinkowej.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------
+//  TYPY WYLICZENIOWE
+// ---------------------------------------------------------------------
+
+// Rodzaj ruchu magazynowego – odpowiada polskim dokumentom magazynowym
+enum MovementType {
+  IN       // PZ – przyjęcie zewnętrzne
+  OUT      // WZ – wydanie zewnętrzne
+  TRANSFER // MM – przesunięcie międzymagazynowe
+  ADJUST   // INW – korekta po inwentaryzacji (może być + lub -)
+}
+
+enum OrderStatus {
+  NEW       // nowe, czeka na opłacenie
+  PAID      // opłacone, czeka na wysyłkę
+  SHIPPED   // wysłane – towar zdejmowany ze stanu
+  DELIVERED // doręczone
+  CANCELLED // anulowane
+}
+
+// Kanał sprzedaży zamówienia
+enum SalesChannel {
+  SHOP      // własny sklep internetowy
+  ALLEGRO
+  OLX
+  STORE     // sprzedaż stacjonarna
+  PHONE     // telefonicznie / mailowo
+}
+
+enum PaymentMethod {
+  TRANSFER // przelew
+  CARD     // karta / szybka płatność
+  CASH     // gotówka
+  COD      // pobranie
+}
+
+enum InventoryStatus {
+  OPEN   // spis w trakcie – można wpisywać ilości
+  CLOSED // zamknięty – różnice zostały zaksięgowane
+}
+
+// ---------------------------------------------------------------------
+//  DANE FIRMY (sprzedawcy) – pojedynczy rekord używany na fakturach
+// ---------------------------------------------------------------------
+model Company {
+  id            Int    @id @default(1)
+  name          String
+  nip           String
+  street        String
+  postalCode    String
+  city          String
+  email         String?
+  phone         String?
+  bankAccount   String?
+  invoicePrefix String @default("FV") // początek numeru faktury, np. FV/2026/10/0001
+}
+
+// ---------------------------------------------------------------------
+//  MAGAZYNY
+// ---------------------------------------------------------------------
+model Warehouse {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique // krótki kod, np. "WAW-1"
+  address   String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  stock           StockLevel[]
+  movements       StockMovement[]  @relation("MovementSource")
+  incomingMoves   StockMovement[]  @relation("MovementTarget")
+  orders          Order[]
+  inventoryCounts InventoryCount[]
+}
+
+// ---------------------------------------------------------------------
+//  PRODUKTY
+// ---------------------------------------------------------------------
+model Category {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  products Product[]
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  sku           String   @unique // wewnętrzny kod produktu
+  ean           String? // kod kreskowy
+  name          String
+  description   String?
+  unit          String   @default("szt")
+  priceNet      Int // cena sprzedaży netto w groszach
+  purchasePrice Int      @default(0) // cena zakupu netto w groszach (do wyceny magazynu)
+  vatRate       Int      @default(23) // stawka VAT w procentach: 23, 8, 5, 0
+  minStock      Int      @default(0) // próg alertu niskiego stanu
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  stock          StockLevel[]
+  movements      StockMovement[]
+  orderItems     OrderItem[]
+  inventoryItems InventoryCountItem[]
+}
+
+// Stan produktu w danym magazynie (klucz złożony: produkt + magazyn).
+model StockLevel {
+  productId   String
+  warehouseId String
+  quantity    Int    @default(0)
+
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@id([productId, warehouseId])
+}
+
+// Rejestr ruchów magazynowych – każda zmiana stanu zapisywana jest jako dokument.
+model StockMovement {
+  id         String       @id @default(cuid())
+  documentNo String // np. PZ/2026/10/0003
+  type       MovementType
+  quantity   Int // dla ADJUST może być ujemna (brak towaru)
+  note       String?
+  createdBy  String? // e-mail zalogowanego użytkownika
+  createdAt  DateTime     @default(now())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  // magazyn, którego dotyczy ruch (dla MM – magazyn źródłowy)
+  warehouseId String
+  warehouse   Warehouse @relation("MovementSource", fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  // tylko dla MM – magazyn docelowy
+  targetWarehouseId String?
+  targetWarehouse   Warehouse? @relation("MovementTarget", fields: [targetWarehouseId], references: [id], onDelete: Cascade)
+
+  orderId String?
+  order   Order?  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------
+//  KONTRAHENCI (klienci)
+// ---------------------------------------------------------------------
+model Customer {
+  id         String   @id @default(cuid())
+  name       String // imię i nazwisko albo nazwa firmy
+  nip        String? // puste = osoba prywatna
+  email      String?
+  phone      String?
+  street     String
+  postalCode String
+  city       String
+  country    String   @default("Polska")
+  createdAt  DateTime @default(now())
+
+  orders   Order[]
+  invoices Invoice[]
+}
+
+// ---------------------------------------------------------------------
+//  ZAMÓWIENIA
+// ---------------------------------------------------------------------
+model Order {
+  id            String        @id @default(cuid())
+  number        String        @unique // np. ZAM/2026/10/0001
+  status        OrderStatus   @default(NEW)
+  channel       SalesChannel  @default(SHOP)
+  paymentMethod PaymentMethod @default(TRANSFER)
+  note          String?
+  createdAt     DateTime      @default(now())
+  shippedAt     DateTime?
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  // magazyn realizujący wysyłkę
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+
+  items     OrderItem[]
+  invoice   Invoice?
+  movements StockMovement[]
+
+  @@index([createdAt])
+}
+
+// Pozycja zamówienia – nazwa i cena zapisywane w chwili złożenia zamówienia,
+// aby późniejsze zmiany w katalogu nie wpływały na zamówienia historyczne.
+model OrderItem {
+  id       String @id @default(cuid())
+  name     String
+  quantity Int
+  priceNet Int // grosze
+  vatRate  Int
+
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+// ---------------------------------------------------------------------
+//  FAKTURY VAT
+//  Dane sprzedawcy i nabywcy kopiowane są do faktury w chwili wystawienia,
+//  dzięki czemu dokument pozostaje niezmienny.
+// ---------------------------------------------------------------------
+model Invoice {
+  id            String        @id @default(cuid())
+  number        String        @unique
+  issueDate     DateTime      @default(now()) // data wystawienia
+  saleDate      DateTime // data sprzedaży
+  dueDate       DateTime // termin płatności
+  paymentMethod PaymentMethod
+  isPaid        Boolean       @default(false)
+
+  sellerName    String
+  sellerNip     String
+  sellerAddress String
+  sellerBank    String?
+
+  buyerName    String
+  buyerNip     String?
+  buyerAddress String
+
+  totalNet   Int
+  totalVat   Int
+  totalGross Int
+
+  createdAt DateTime @default(now())
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  orderId String? @unique // jedna faktura na jedno zamówienie
+  order   Order?  @relation(fields: [orderId], references: [id])
+
+  items InvoiceItem[]
+}
+
+model InvoiceItem {
+  id       String @id @default(cuid())
+  name     String
+  unit     String
+  quantity Int
+  priceNet Int
+  vatRate  Int
+  net      Int // wartość netto pozycji
+  vat      Int // kwota VAT
+  gross    Int // wartość brutto
+
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------
+//  INWENTARYZACJA (spis z natury)
+//  Spis zapisuje stany systemowe w chwili rozpoczęcia; po wprowadzeniu ilości
+//  policzonych i zamknięciu spisu różnice księgowane są jako ruchy ADJUST.
+// ---------------------------------------------------------------------
+model InventoryCount {
+  id        String          @id @default(cuid())
+  number    String          @unique // np. INW/2026/10/0001
+  status    InventoryStatus @default(OPEN)
+  note      String?
+  createdAt DateTime        @default(now())
+  closedAt  DateTime?
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  items InventoryCountItem[]
+}
+
+model InventoryCountItem {
+  id          String @id @default(cuid())
+  expectedQty Int // stan w systemie w chwili rozpoczęcia spisu
+  countedQty  Int? // stan policzony (null = jeszcze nie policzono)
+
+  countId   String
+  count     InventoryCount @relation(fields: [countId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([countId, productId])
+}
