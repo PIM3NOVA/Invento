@@ -140,13 +140,18 @@ async function main() {
 
   console.log("Zamówienia i faktury…");
   const channels: SalesChannel[] = ["SHOP", "SHOP", "ALLEGRO", "ALLEGRO", "OLX", "STORE", "PHONE"];
-  const payments: PaymentMethod[] = ["TRANSFER", "CARD", "CARD", "COD"];
+  const payments: PaymentMethod[] = ["TRANSFER", "TRANSFER", "CARD", "COD"];
 
-  for (let i = 0; i < 32; i++) {
-    const created = new Date();
-    created.setDate(created.getDate() - between(0, 13));
-    created.setHours(between(8, 21), between(0, 59));
+  // Daty zamówień posortowane rosnąco – numeracja dokumentów zgodna z chronologią.
+  // Część zamówień starsza niż 14 dni – faktury przelewowe mogą być po terminie.
+  const orderDates = Array.from({ length: 32 }, () => {
+    const d = new Date();
+    d.setDate(d.getDate() - between(0, 20));
+    d.setHours(between(8, 21), between(0, 59));
+    return d;
+  }).sort((a, b) => a.getTime() - b.getTime());
 
+  for (const created of orderDates) {
     const customer = pick(customers);
     const channel = customer.nip ? "PHONE" : pick(channels);
     const warehouse = channel === "STORE" ? shop : mainWarehouse;
@@ -211,7 +216,12 @@ async function main() {
           saleDate: created,
           dueDate: due,
           paymentMethod,
-          isPaid: paymentMethod !== "TRANSFER" || random() > 0.4,
+          // przelew: starsze opłacone, z ostatnich 15–18 dni po terminie, najnowsze częściowo w terminie;
+          // pobranie: opłacone po doręczeniu
+          isPaid:
+            paymentMethod === "TRANSFER"
+              ? age > 18 || (age <= 14 && random() > 0.5)
+              : paymentMethod !== "COD" || status === "DELIVERED",
           sellerName: company.name,
           sellerNip: company.nip,
           sellerAddress: `${company.street}, ${company.postalCode} ${company.city}`,
