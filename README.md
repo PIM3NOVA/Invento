@@ -28,9 +28,9 @@ Projekt realizowany w ramach pracy inżynierskiej.
 | **Magazyny** | Wiele magazynów z podsumowaniem liczby produktów, sztuk i wartości zapasu |
 | **Ruchy magazynowe** | Dokumenty PZ (przyjęcie), WZ (wydanie), MM (przesunięcie między magazynami) oraz korekty inwentaryzacyjne; blokada wydania towaru ponad stan |
 | **Inwentaryzacja** | Spis z natury: zapis stanów systemowych, wprowadzanie ilości policzonych z bieżącym wyliczaniem różnic, zamknięcie spisu z automatycznym wyrównaniem stanów |
-| **Zamówienia** | Kanały sprzedaży (sklep internetowy, Allegro, OLX, sprzedaż stacjonarna, telefon), statusy realizacji; wysyłka automatycznie generuje dokument WZ |
+| **Zamówienia** | Kanały sprzedaży (sklep internetowy, Allegro, OLX, sprzedaż stacjonarna, telefon), statusy realizacji; podgląd dostępnego stanu przy dodawaniu produktów; wysyłka automatycznie generuje dokument WZ |
 | **Kontrahenci** | Klienci firmowi (NIP) i indywidualni wraz z historią zamówień |
-| **Faktury VAT** | Wystawianie faktury do zamówienia, zestawienie według stawek VAT, kwota słownie, statusy płatności i terminy, wydruk / zapis do PDF |
+| **Faktury VAT** | Wystawianie faktury do zamówienia, zestawienie według stawek VAT, kwota słownie, statusy płatności i terminy, wydruk / zapis do PDF, eksport do pliku XML w strukturze FA(3) Krajowego Systemu e-Faktur (KSeF) |
 | **Ustawienia firmy** | Dane sprzedawcy i prefiks numeracji faktur |
 
 Dokumenty numerowane są automatycznie w formacie `PREFIX/ROK/MIESIĄC/NUMER` (np. `FV/2026/10/0001`).
@@ -45,6 +45,7 @@ Interfejs działa na komputerze i urządzeniach mobilnych: na smartfonie tabele 
 - **Prisma ORM 7**
 - **PostgreSQL (Supabase)**: baza danych i uwierzytelnianie (Supabase Auth)
 - **Zod**: walidacja danych formularzy
+- **Vitest**: testy jednostkowe
 - **Vercel**: hosting i automatyczne wdrożenia
 
 ## Architektura
@@ -55,6 +56,8 @@ Interfejs działa na komputerze i urządzeniach mobilnych: na smartfonie tabele 
 - Kwoty przechowywane są w groszach jako liczby całkowite, co eliminuje błędy zaokrągleń.
 - Faktury i pozycje zamówień przechowują kopię danych z chwili wystawienia, więc późniejsze zmiany w katalogu lub danych kontrahenta nie wpływają na dokumenty historyczne.
 - Na wszystkich tabelach włączone jest Row Level Security. Dostęp do danych odbywa się wyłącznie po stronie serwera aplikacji.
+- Operacje nieodwracalne (wysyłka i anulowanie zamówienia, zamknięcie spisu) wymagają potwierdzenia.
+- Eksport KSeF (`src/lib/ksef.ts`) generuje plik zgodny ze schematem FA(3) opublikowanym przez Ministerstwo Finansów; wysyłka do KSeF nie jest obsługiwana.
 
 ### Struktura projektu
 
@@ -76,6 +79,23 @@ src/
 ### Model danych
 
 `Product`, `Category`, `Warehouse`, `StockLevel` (stan produktu w magazynie), `StockMovement` (dokumenty magazynowe), `InventoryCount` / `InventoryCountItem` (inwentaryzacja), `Customer`, `Order` / `OrderItem`, `Invoice` / `InvoiceItem`, `Company` (dane sprzedawcy).
+
+## Testy
+
+Logika biznesowa objęta jest testami jednostkowymi (Vitest, 73 testy):
+
+| Moduł | Zakres |
+|---|---|
+| `invoice-math` | wartości netto, VAT i brutto, zaokrąglanie, zestawienie według stawek |
+| `amount-in-words` | kwota słownie z odmianą złotych, tysięcy i milionów |
+| `numbering` | numeracja dokumentów w formacie `PREFIX/ROK/MIESIĄC/NUMER` |
+| `format` | odmiana liczebników, konwersja kwot z formularzy |
+| `stock` | dokumenty PZ, WZ, MM, korekty, blokada stanu poniżej zera |
+| `ksef` | struktura pliku FA(3), sumy według stawek, dane nabywcy, płatność |
+
+```bash
+npm test
+```
 
 ## Uruchomienie lokalne
 
@@ -105,6 +125,7 @@ Zmienne środowiskowe:
 | `npm run dev` | serwer deweloperski |
 | `npm run build` | build produkcyjny |
 | `npm run lint` | analiza statyczna kodu (ESLint) |
+| `npm test` | testy jednostkowe (Vitest) |
 | `npm run db:migrate` | migracja bazy danych |
 | `npm run db:deploy` | zastosowanie migracji na środowisku produkcyjnym |
 | `npm run db:seed` | wgranie danych przykładowych (czyści bazę) |
