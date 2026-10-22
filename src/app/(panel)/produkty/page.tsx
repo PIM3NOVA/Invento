@@ -58,9 +58,9 @@ export default async function ProductsPage({ searchParams }: PageProps<"/produkt
       <Form action="/produkty" className="mb-5 flex flex-col gap-3 md:flex-row">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted" />
-          <Input name="q" defaultValue={query} placeholder="Szukaj po nazwie, SKU lub EAN…" className="pl-11" />
+          <Input name="q" defaultValue={query} placeholder="Szukaj po nazwie, SKU lub EAN…" className="pl-11" aria-label="Szukaj produktu" />
         </div>
-        <Select name="kategoria" defaultValue={categoryId} className="md:w-56">
+        <Select name="kategoria" defaultValue={categoryId} className="md:w-56" aria-label="Kategoria">
           <option value="">Wszystkie kategorie</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>

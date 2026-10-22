@@ -45,7 +45,7 @@ export default async function WarehousesPage() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-lg font-semibold group-hover:text-brand">{w.name}</p>
+                    <p className="text-lg font-semibold group-hover:text-brand-light">{w.name}</p>
                     <p className="text-sm text-muted">{w.code}</p>
                   </div>
                   {w.isDefault && <Badge tone="brand">domyślny</Badge>}

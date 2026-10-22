@@ -21,7 +21,15 @@ export default async function NewOrderPage({ searchParams }: PageProps<"/zamowie
       where: { isActive: true },
       orderBy: { name: "asc" },
       // tylko pola wymagane przez edytor pozycji
-      select: { id: true, name: true, sku: true, unit: true, priceNet: true, vatRate: true },
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        unit: true,
+        priceNet: true,
+        vatRate: true,
+        stock: { select: { warehouseId: true, quantity: true } },
+      },
     }),
   ]);
 
@@ -53,15 +61,6 @@ export default async function NewOrderPage({ searchParams }: PageProps<"/zamowie
                 ))}
               </Select>
             </Field>
-            <Field label="Wysyłka z magazynu">
-              <Select name="warehouseId">
-                {warehouses.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {w.name}
-                  </option>
-                ))}
-              </Select>
-            </Field>
             <Field label="Kanał sprzedaży">
               <Select name="channel">
                 {Object.entries(CHANNEL).map(([value, label]) => (
@@ -88,7 +87,7 @@ export default async function NewOrderPage({ searchParams }: PageProps<"/zamowie
 
         <Card>
           <CardTitle>Produkty</CardTitle>
-          <OrderItemsEditor products={products} />
+          <OrderItemsEditor products={products} warehouses={warehouses} />
         </Card>
 
         <div className="flex justify-end">

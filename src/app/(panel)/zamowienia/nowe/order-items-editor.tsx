@@ -1,11 +1,11 @@
 "use client";
-// Edytor pozycji zamówienia z bieżącym przeliczaniem sum.
-// Pozycje serializowane są do ukrytego pola "items" (JSON).
+// Edytor pozycji zamówienia z bieżącym przeliczaniem sum i podglądem stanu
+// w wybranym magazynie. Pozycje serializowane są do ukrytego pola "items" (JSON).
 import { useState } from "react";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { formatMoney } from "@/lib/format";
 import { calcTotals } from "@/lib/invoice-math";
-import { Select } from "@/components/ui/form";
+import { Field, Select } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 
 export type ProductOption = {
@@ -15,15 +15,25 @@ export type ProductOption = {
   unit: string;
   priceNet: number;
   vatRate: number;
+  stock: { warehouseId: string; quantity: number }[];
 };
 
 type Line = { productId: string; quantity: number };
 
-export function OrderItemsEditor({ products }: { products: ProductOption[] }) {
+export function OrderItemsEditor({
+  products,
+  warehouses,
+}: {
+  products: ProductOption[];
+  warehouses: { id: string; name: string }[];
+}) {
   const [lines, setLines] = useState<Line[]>([]);
   const [selected, setSelected] = useState("");
+  const [warehouseId, setWarehouseId] = useState(warehouses[0]?.id ?? "");
 
   const findProduct = (id: string) => products.find((p) => p.id === id)!;
+  const available = (p: ProductOption) =>
+    p.stock.find((s) => s.warehouseId === warehouseId)?.quantity ?? 0;
 
   function addLine() {
     if (!selected) return;
@@ -57,13 +67,28 @@ export function OrderItemsEditor({ products }: { products: ProductOption[] }) {
     <div className="flex flex-col gap-4">
       <input type="hidden" name="items" value={JSON.stringify(lines)} />
 
+      <Field label="Wysyłka z magazynu">
+        <Select name="warehouseId" value={warehouseId} onChange={(e) => setWarehouseId(e.target.value)}>
+          {warehouses.map((w) => (
+            <option key={w.id} value={w.id}>
+              {w.name}
+            </option>
+          ))}
+        </Select>
+      </Field>
+
       {/* Wybór produktu */}
       <div className="flex flex-col gap-2 sm:flex-row">
-        <Select value={selected} onChange={(e) => setSelected(e.target.value)} className="flex-1">
+        <Select
+          value={selected}
+          onChange={(e) => setSelected(e.target.value)}
+          className="flex-1"
+          aria-label="Produkt"
+        >
           <option value="">— wybierz produkt —</option>
           {products.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.name} ({p.sku}) – {formatMoney(p.priceNet)} netto
+              {p.name} ({p.sku}) – {formatMoney(p.priceNet)} netto · dostępne: {available(p)} {p.unit}
             </option>
           ))}
         </Select>
@@ -80,6 +105,7 @@ export function OrderItemsEditor({ products }: { products: ProductOption[] }) {
         <ul className="flex flex-col gap-2">
           {lines.map((line) => {
             const p = findProduct(line.productId);
+            const inStock = available(p);
             return (
               <li
                 key={line.productId}
@@ -88,8 +114,14 @@ export function OrderItemsEditor({ products }: { products: ProductOption[] }) {
                 <div className="min-w-0 flex-1 basis-40">
                   <p className="truncate text-sm font-medium">{p.name}</p>
                   <p className="text-xs text-muted">
-                    {formatMoney(p.priceNet)} netto · VAT {p.vatRate}%
+                    {formatMoney(p.priceNet)} netto · VAT {p.vatRate}% · dostępne: {inStock} {p.unit}
                   </p>
+                  {/* zamówienie można przyjąć, ale wysyłka wymaga wystarczającego stanu */}
+                  {line.quantity > inStock && (
+                    <p className="text-xs text-warning">
+                      Za mało towaru w magazynie – wysyłka będzie możliwa po przyjęciu dostawy.
+                    </p>
+                  )}
                 </div>
                 {/* Zmiana ilości */}
                 <div className="flex items-center gap-1">
@@ -142,7 +174,7 @@ export function OrderItemsEditor({ products }: { products: ProductOption[] }) {
         <dt className="text-muted">VAT</dt>
         <dd className="text-right tabular-nums">{formatMoney(totals.vat)}</dd>
         <dt className="font-semibold">Brutto</dt>
-        <dd className="text-right text-lg font-semibold text-brand tabular-nums">{formatMoney(totals.gross)}</dd>
+        <dd className="text-right text-lg font-semibold text-brand-light tabular-nums">{formatMoney(totals.gross)}</dd>
       </dl>
     </div>
   );

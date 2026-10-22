@@ -11,7 +11,7 @@ export function FilterChip({ href, active, children }: { href: string; active: b
     <Link
       href={href}
       className={`flex min-h-10 shrink-0 items-center rounded-full border px-4 text-sm whitespace-nowrap ${
-        active ? "border-brand bg-brand-soft text-brand" : "border-line text-muted hover:text-fg"
+        active ? "border-brand bg-brand-soft text-brand-light" : "border-line text-muted hover:text-fg"
       }`}
     >
       {children}

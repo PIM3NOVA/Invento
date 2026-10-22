@@ -55,13 +55,13 @@ export default async function InvoicePage({ params }: PageProps<"/faktury/[id]">
       <article className="mx-auto max-w-4xl overflow-x-auto rounded-card bg-white p-5 text-[13px] text-neutral-900 shadow-2xl md:p-10 print:max-w-none print:rounded-none print:p-0 print:shadow-none">
         <header className="flex flex-col justify-between gap-4 border-b-2 border-brand pb-5 sm:flex-row">
           <div>
-            <p className="text-xs tracking-widest text-neutral-500 uppercase">Faktura VAT</p>
+            <p className="text-xs tracking-widest text-neutral-600 uppercase">Faktura VAT</p>
             <p className="text-2xl font-bold">{invoice.number}</p>
           </div>
           <dl className="grid grid-cols-[auto_auto] gap-x-4 gap-y-0.5 text-right sm:text-left">
-            <dt className="text-neutral-500">Data wystawienia:</dt>
+            <dt className="text-neutral-600">Data wystawienia:</dt>
             <dd>{formatDate(invoice.issueDate)}</dd>
-            <dt className="text-neutral-500">Data sprzedaży:</dt>
+            <dt className="text-neutral-600">Data sprzedaży:</dt>
             <dd>{formatDate(invoice.saleDate)}</dd>
           </dl>
         </header>
@@ -132,25 +132,25 @@ export default async function InvoicePage({ params }: PageProps<"/faktury/[id]">
 
         <section className="mt-6 grid gap-4 rounded-xl bg-neutral-100 p-4 sm:grid-cols-2">
           <div>
-            <p className="text-xs text-neutral-500">Do zapłaty</p>
+            <p className="text-xs text-neutral-600">Do zapłaty</p>
             <p className="text-2xl font-bold text-brand">{formatMoney(invoice.totalGross)}</p>
             <p className="mt-1 text-xs">Słownie: {amountInWords(invoice.totalGross)}</p>
           </div>
           <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-            <dt className="text-neutral-500">Sposób płatności:</dt>
+            <dt className="text-neutral-600">Sposób płatności:</dt>
             <dd>{PAYMENT[invoice.paymentMethod]}</dd>
-            <dt className="text-neutral-500">Termin płatności:</dt>
+            <dt className="text-neutral-600">Termin płatności:</dt>
             <dd>{formatDate(invoice.dueDate)}</dd>
             {invoice.sellerBank && (
               <>
-                <dt className="text-neutral-500">Nr konta:</dt>
+                <dt className="text-neutral-600">Nr konta:</dt>
                 <dd className="break-all">{invoice.sellerBank}</dd>
               </>
             )}
           </dl>
         </section>
 
-        <footer className="mt-12 grid grid-cols-2 gap-10 text-center text-xs text-neutral-500">
+        <footer className="mt-12 grid grid-cols-2 gap-10 text-center text-xs text-neutral-600">
           <p className="border-t border-neutral-300 pt-2">Osoba upoważniona do odbioru</p>
           <p className="border-t border-neutral-300 pt-2">Osoba upoważniona do wystawienia</p>
         </footer>
@@ -159,7 +159,7 @@ export default async function InvoicePage({ params }: PageProps<"/faktury/[id]">
       {invoice.order && (
         <p className="no-print mt-6 text-center text-sm text-muted">
           Wystawiona do zamówienia{" "}
-          <Link href={`/zamowienia/${invoice.order.id}`} className="text-brand hover:underline">
+          <Link href={`/zamowienia/${invoice.order.id}`} className="text-brand-light underline underline-offset-2">
             {invoice.order.number}
           </Link>
         </p>
@@ -171,7 +171,7 @@ export default async function InvoicePage({ params }: PageProps<"/faktury/[id]">
 function Party({ title, name, address, nip }: { title: string; name: string; address: string; nip: string | null }) {
   return (
     <div>
-      <p className="mb-1 text-xs tracking-widest text-neutral-500 uppercase">{title}</p>
+      <p className="mb-1 text-xs tracking-widest text-neutral-600 uppercase">{title}</p>
       <p className="font-semibold">{name}</p>
       <p>{address}</p>
       {nip && <p>NIP: {nip}</p>}

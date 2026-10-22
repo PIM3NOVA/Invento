@@ -83,7 +83,12 @@ export default async function InventoryCountPage({ params }: PageProps<"/inwenta
             <SubmitButton variant="secondary" name="intent" value="save">
               Zapisz postęp
             </SubmitButton>
-            <SubmitButton name="intent" value="close" pendingText="Księgowanie…">
+            <SubmitButton
+              name="intent"
+              value="close"
+              pendingText="Księgowanie…"
+              confirm="Zamknąć spis? Różnice zostaną zaksięgowane jako korekty i spisu nie będzie można edytować."
+            >
               Zamknij spis i wyrównaj stany
             </SubmitButton>
           </div>

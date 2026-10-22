@@ -66,7 +66,7 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
             onClick={onNavigate}
             className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm transition-colors ${
               active
-                ? "bg-brand-soft font-medium text-brand"
+                ? "bg-brand-soft font-medium text-brand-light"
                 : "text-muted hover:bg-surface-2 hover:text-fg"
             }`}
           >
@@ -85,7 +85,7 @@ function UserBox({ email, logoutAction }: { email: string; logoutAction: () => P
       <p className="truncate text-xs text-muted">Zalogowano jako</p>
       <p className="truncate text-sm font-medium">{email}</p>
       <form action={logoutAction}>
-        <button className="mt-2 flex items-center gap-2 text-sm text-muted hover:text-brand">
+        <button className="mt-2 flex items-center gap-2 text-sm text-muted hover:text-brand-light">
           <LogOut className="size-4" /> Wyloguj
         </button>
       </form>
@@ -168,7 +168,7 @@ export function AppNav({
               key={href}
               href={href}
               className={`flex h-16 flex-col items-center justify-center gap-1 text-[11px] ${
-                active ? "text-brand" : "text-muted"
+                active ? "text-brand-light" : "text-muted"
               }`}
             >
               <Icon className="size-5" />

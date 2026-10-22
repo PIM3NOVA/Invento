@@ -105,7 +105,7 @@ export default async function DashboardPage() {
                 <li key={p.id}>
                   <Link
                     href={`/produkty/${p.id}`}
-                    className="flex items-center justify-between gap-3 rounded-xl bg-surface-2 px-3 py-2.5 text-sm hover:text-brand"
+                    className="flex items-center justify-between gap-3 rounded-xl bg-surface-2 px-3 py-2.5 text-sm hover:text-brand-light"
                   >
                     <span className="truncate">{p.name}</span>
                     <Badge tone={p.qty === 0 ? "danger" : "warning"}>
@@ -120,7 +120,7 @@ export default async function DashboardPage() {
       </div>
 
       <Card className="mt-6">
-        <CardTitle action={<Link href="/zamowienia" className="text-sm text-brand hover:underline">Wszystkie</Link>}>
+        <CardTitle action={<Link href="/zamowienia" className="text-sm text-brand-light hover:underline">Wszystkie</Link>}>
           Zamówienia do realizacji
         </CardTitle>
         {toShip.length === 0 ? (
@@ -129,7 +129,7 @@ export default async function DashboardPage() {
           <ul className="divide-y divide-line">
             {toShip.map((o) => (
               <li key={o.id}>
-                <Link href={`/zamowienia/${o.id}`} className="flex items-center justify-between gap-3 py-3 hover:text-brand">
+                <Link href={`/zamowienia/${o.id}`} className="flex items-center justify-between gap-3 py-3 hover:text-brand-light">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{o.customer.name}</p>
                     <p className="text-xs text-muted">

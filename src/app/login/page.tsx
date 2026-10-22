@@ -61,7 +61,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           {isRegister ? "Masz już konto? " : "Nie masz konta? "}
           <Link
             href={isRegister ? "/login" : "/login?tryb=rejestracja"}
-            className="font-medium text-brand hover:underline"
+            className="font-medium text-brand-light hover:underline"
           >
             {isRegister ? "Zaloguj się" : "Zarejestruj się"}
           </Link>

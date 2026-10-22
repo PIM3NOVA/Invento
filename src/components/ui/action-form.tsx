@@ -58,6 +58,7 @@ export function SubmitButton({
   className = "",
   name,
   value,
+  confirm,
 }: {
   children: ReactNode;
   pendingText?: string;
@@ -65,10 +66,21 @@ export function SubmitButton({
   className?: string;
   name?: string; // name/value przekazywane do FormData
   value?: string;
+  confirm?: string; // pytanie wyświetlane przed wykonaniem nieodwracalnej akcji
 }) {
   const pending = useContext(PendingContext);
   return (
-    <Button type="submit" name={name} value={value} variant={variant} disabled={pending} className={className}>
+    <Button
+      type="submit"
+      name={name}
+      value={value}
+      variant={variant}
+      disabled={pending}
+      className={className}
+      onClick={(event) => {
+        if (confirm && !window.confirm(confirm)) event.preventDefault();
+      }}
+    >
       {pending ? pendingText : children}
     </Button>
   );

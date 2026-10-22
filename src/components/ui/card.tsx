@@ -42,7 +42,7 @@ export function PageHeader({
 type Tone = "brand" | "success" | "warning" | "danger" | "neutral";
 
 const tones: Record<Tone, string> = {
-  brand: "bg-brand-soft text-brand",
+  brand: "bg-brand-soft text-brand-light",
   success: "bg-success/15 text-success",
   warning: "bg-warning/15 text-warning",
   danger: "bg-danger/15 text-danger",
@@ -76,7 +76,7 @@ export function StatCard({
     <div className="rounded-card border border-line bg-surface p-4 md:p-5">
       <div className="flex items-center justify-between text-muted">
         <span className="text-xs font-medium uppercase tracking-wide md:text-sm md:normal-case md:tracking-normal">{label}</span>
-        <span className="text-brand">{icon}</span>
+        <span className="text-brand-light">{icon}</span>
       </div>
       <p className="mt-2 text-xl font-semibold md:text-2xl">{value}</p>
       {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}

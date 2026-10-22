@@ -15,7 +15,7 @@ export function PasswordInput(props: Omit<ComponentProps<"input">, "type">) {
         type="button" // nie wysyła formularza
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? "Ukryj hasło" : "Pokaż hasło"}
-        className="absolute inset-y-0 right-1 flex w-11 items-center justify-center rounded-xl text-muted hover:text-brand"
+        className="absolute inset-y-0 right-1 flex w-11 items-center justify-center rounded-xl text-muted hover:text-brand-light"
       >
         {visible ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
       </button>

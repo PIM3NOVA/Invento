@@ -48,6 +48,6 @@ export async function proxy(request: NextRequest) {
 // Zakres proxy: wszystkie ścieżki poza zasobami statycznymi.
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icon|apple-icon|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|manifest.webmanifest|icon|apple-icon|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

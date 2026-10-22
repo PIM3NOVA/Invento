@@ -57,7 +57,7 @@ export default async function OrderPage({ params }: PageProps<"/zamowienia/[id]"
               <dt className="text-muted">VAT</dt>
               <dd className="text-right">{formatMoney(totals.vat)}</dd>
               <dt className="font-semibold">Do zapłaty</dt>
-              <dd className="text-right text-lg font-semibold text-brand">{formatMoney(totals.gross)}</dd>
+              <dd className="text-right text-lg font-semibold text-brand-light">{formatMoney(totals.gross)}</dd>
             </dl>
           </Card>
         </div>
@@ -85,7 +85,7 @@ export default async function OrderPage({ params }: PageProps<"/zamowienia/[id]"
 
           <Card>
             <CardTitle>Klient</CardTitle>
-            <Link href={`/kontrahenci/${order.customer.id}`} className="font-medium hover:text-brand">
+            <Link href={`/kontrahenci/${order.customer.id}`} className="font-medium hover:text-brand-light">
               {order.customer.name}
             </Link>
             <p className="mt-1 text-sm text-muted">
@@ -138,7 +138,12 @@ function StatusActions({ orderId, status }: { orderId: string; status: string })
         </SubmitButton>
       )}
       {(status === "NEW" || status === "PAID") && (
-        <SubmitButton name="status" value="SHIPPED" pendingText="Wydawanie z magazynu…">
+        <SubmitButton
+          name="status"
+          value="SHIPPED"
+          pendingText="Wydawanie z magazynu…"
+          confirm="Wysłać zamówienie? Towar zostanie wydany z magazynu (dokument WZ). Tej operacji nie można cofnąć."
+        >
           Wyślij (wydaj z magazynu)
         </SubmitButton>
       )}
@@ -148,7 +153,12 @@ function StatusActions({ orderId, status }: { orderId: string; status: string })
         </SubmitButton>
       )}
       {(status === "NEW" || status === "PAID") && (
-        <SubmitButton name="status" value="CANCELLED" variant="danger">
+        <SubmitButton
+          name="status"
+          value="CANCELLED"
+          variant="danger"
+          confirm="Anulować zamówienie? Tej operacji nie można cofnąć."
+        >
           Anuluj zamówienie
         </SubmitButton>
       )}
