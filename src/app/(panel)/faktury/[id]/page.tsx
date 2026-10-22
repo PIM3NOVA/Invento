@@ -10,6 +10,8 @@ import { amountInWords } from "@/lib/amount-in-words";
 import { PAYMENT } from "@/lib/labels";
 import { ActionForm, SubmitButton } from "@/components/ui/action-form";
 import { Badge } from "@/components/ui/card";
+import { buttonClass } from "@/components/ui/button";
+import { FileCode } from "lucide-react";
 import { toggleInvoicePaid } from "../actions";
 import { PrintButton } from "./print-button";
 
@@ -40,6 +42,10 @@ export default async function InvoicePage({ params }: PageProps<"/faktury/[id]">
               {invoice.isPaid ? "Oznacz jako nieopłaconą" : "Oznacz jako opłaconą"}
             </SubmitButton>
           </ActionForm>
+          {/* zwykły odnośnik – plik generowany przez /faktury/[id]/ksef */}
+          <a href={`/faktury/${invoice.id}/ksef`} download className={buttonClass("secondary")}>
+            <FileCode className="size-4" /> XML KSeF
+          </a>
           <PrintButton />
         </div>
       </div>
