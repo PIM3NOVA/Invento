@@ -50,7 +50,7 @@ export default async function OrdersPage({ searchParams }: PageProps<"/zamowieni
         </FilterChip>
         {STATUSES.map((s) => (
           <FilterChip key={s} href={`/zamowienia?status=${s}`} active={status === s}>
-            {ORDER_STATUS[s].label} <span className="ml-1.5 opacity-60">{countOf(s)}</span>
+            {ORDER_STATUS[s].label} <span className="ml-1.5">{countOf(s)}</span>
           </FilterChip>
         ))}
       </FilterBar>
