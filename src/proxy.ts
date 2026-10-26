@@ -45,9 +45,9 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
-// Zakres proxy: wszystkie ścieżki poza zasobami statycznymi.
+// Zakres proxy: wszystkie ścieżki poza zasobami statycznymi i zadaniami cron (własna autoryzacja).
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt|manifest.webmanifest|icon|apple-icon|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!api/cron|_next/static|_next/image|favicon.ico|robots.txt|manifest.webmanifest|icon|apple-icon|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
