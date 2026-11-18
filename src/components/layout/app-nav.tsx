@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import {
   ArrowLeftRight,
   ClipboardCheck,
+  Download,
   FileText,
   LayoutDashboard,
   LogOut,
@@ -65,9 +66,7 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
             href={href}
             onClick={onNavigate}
             className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm transition-colors ${
-              active
-                ? "bg-brand-soft font-medium text-brand-light"
-                : "text-muted hover:bg-surface-2 hover:text-fg"
+              active ? "bg-brand-soft font-medium text-brand-light" : "text-muted hover:bg-surface-2 hover:text-fg"
             }`}
           >
             <Icon className="size-5" />
@@ -79,27 +78,56 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
   );
 }
 
-function UserBox({ email, logoutAction }: { email: string; logoutAction: () => Promise<void> }) {
+// Dokumenty do pobrania (pliki w public/dokumenty)
+const DOCUMENTS = [
+  {
+    href: "/dokumenty/konspekt-wiktoria-debinska.docx",
+    fileName: "Konspekt pracy dyplomowej - Wiktoria Dębińska.docx",
+    label: "KONSPEKT",
+  },
+  {
+    href: "/dokumenty/praca-inzynierska-wiktoria-debinska.docx",
+    fileName: "Praca inżynierska - Wiktoria Dębińska.docx",
+    label: "PRACA INŻ",
+  },
+];
+
+function DocumentLinks() {
   return (
-    <div className="rounded-xl border border-line bg-surface-2 p-3">
-      <p className="truncate text-xs text-muted">Zalogowano jako</p>
-      <p className="truncate text-sm font-medium">{email}</p>
-      <form action={logoutAction}>
-        <button className="mt-2 flex items-center gap-2 text-sm text-muted hover:text-brand-light">
-          <LogOut className="size-4" /> Wyloguj
-        </button>
-      </form>
+    <div className="mb-3 flex flex-col gap-2">
+      {DOCUMENTS.map(({ href, fileName, label }) => (
+        <a
+          key={href}
+          href={href}
+          download={fileName}
+          className="flex min-h-11 items-center gap-3 rounded-xl border border-line bg-surface-2 px-3 text-sm font-medium text-muted transition-colors hover:text-brand-light"
+        >
+          <Download className="size-4" />
+          {label}
+        </a>
+      ))}
     </div>
   );
 }
 
-export function AppNav({
-  email,
-  logoutAction,
-}: {
-  email: string;
-  logoutAction: () => Promise<void>;
-}) {
+function UserBox({ email, logoutAction }: { email: string; logoutAction: () => Promise<void> }) {
+  return (
+    <div>
+      <DocumentLinks />
+      <div className="rounded-xl border border-line bg-surface-2 p-3">
+        <p className="truncate text-xs text-muted">Zalogowano jako</p>
+        <p className="truncate text-sm font-medium">{email}</p>
+        <form action={logoutAction}>
+          <button className="mt-2 flex items-center gap-2 text-sm text-muted hover:text-brand-light">
+            <LogOut className="size-4" /> Wyloguj
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export function AppNav({ email, logoutAction }: { email: string; logoutAction: () => Promise<void> }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
