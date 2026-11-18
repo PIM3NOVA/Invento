@@ -81,13 +81,13 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
 // Dokumenty do pobrania (pliki w public/dokumenty)
 const DOCUMENTS = [
   {
-    href: "/dokumenty/konspekt-wiktoria-debinska.docx",
-    fileName: "Konspekt pracy dyplomowej - Wiktoria Dębińska.docx",
+    href: "/dokumenty/konspekt-wiktoria-debinska.pdf",
+    fileName: "Konspekt pracy dyplomowej - Wiktoria Dębińska.pdf",
     label: "KONSPEKT",
   },
   {
-    href: "/dokumenty/praca-inzynierska-wiktoria-debinska.docx",
-    fileName: "Praca inżynierska - Wiktoria Dębińska.docx",
+    href: "/dokumenty/praca-inzynierska-wiktoria-debinska.pdf",
+    fileName: "Praca inżynierska - Wiktoria Dębińska.pdf",
     label: "PRACA INŻ",
   },
 ];
